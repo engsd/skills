@@ -1,0 +1,148 @@
+# Image Prompt Template
+
+## JSON Prompt Input
+
+Use JSON for every image prompt. Each image should be one object in an array:
+
+```json
+[
+  {
+    "id": 1,
+    "placeholder": "IMAGE_PLACEHOLDER_1",
+    "title": "section title or image title",
+    "style_theme": "油画风",
+    "style_key": "oil_painting",
+    "subtheme": "historical drama and dramatic power staging",
+    "aspect_ratio": "16:9",
+    "alt": "short Chinese alt text",
+    "prompt": "English image prompt used by the generation script"
+  }
+]
+```
+
+Required fields:
+- `id`: image sequence number.
+- `placeholder`: placeholder marker without comment brackets.
+- `title`: section/image title.
+- `style_theme`: one of `油画风`, `中国古典绘画`, `水墨`.
+- `style_key`: one of `oil_painting`, `chinese_classical`, `ink_wash`.
+- `subtheme`: a smaller visual direction selected from the chosen big theme.
+- `aspect_ratio`: usually `16:9` or `3:4`.
+- `alt`: short markdown image description.
+- `prompt`: final English prompt passed to image generation.
+
+Save prompt objects as a JSON array and run:
+
+```bash
+python scripts/async_batch_generate.py --prompts "prompts.json" --article "article.md"
+```
+
+The async script reads `prompt`, `style_key`, and `aspect_ratio`, then submits all tasks before polling results.
+
+## Style Themes and Subthemes
+
+Choose one big theme, then automatically choose a matching subtheme based on the article section.
+
+### 1. 油画风 (`oil_painting`)
+
+Best for war, rulers, grand ceremonies, political spectacle, and dramatic power transitions.
+
+Available subthemes:
+- Historical drama with dramatic chiaroscuro.
+- Museum-style military-political tableau.
+- Golden court spectacle and theatrical authority.
+- Baroque tension between violence and legitimacy.
+
+Style language:
+```
+oil painting style, classical brushwork, rich textures and layers,
+dramatic chiaroscuro lighting, museum-quality fine art
+```
+
+### 2. 中国古典绘画 (`chinese_classical`)
+
+Best for court order, institutions, diplomacy, elite rituals, objects, and refined political symbolism.
+
+Available subthemes:
+- Gongbi-style ritual order and elegant hierarchy.
+- East Asian scroll narrative with layered court space.
+- Poetic object-centered composition for relics, vessels, and scrolls.
+- Calm bureaucratic panorama of governance and discipline.
+
+Style language:
+```
+traditional Chinese painting, Gongbi technique, elegant brushwork,
+harmonious colors, poetic atmosphere, refined composition
+```
+
+### 3. 水墨 (`ink_wash`)
+
+Best for wabi-sabi, tea rooms, spiritual austerity, silence, tragedy, and interior psychological tension.
+
+Available subthemes:
+- Sumi-e austerity and meditative emptiness.
+- Wabi-sabi interior with rough textures and low light.
+- Minimalist ritual space shaped by silence and restraint.
+- Ink-wash tragedy with negative space and symbolic objects.
+
+Style language:
+```
+Chinese ink wash painting, sumi-e technique, minimalist brushstrokes,
+black ink on rice paper, serene contemplative mood
+```
+
+## Automatic Subtheme Selection
+
+Use article content to select a visual route:
+- Battles, conquest, regime founding, mass ceremony → `油画风`.
+- Institutions, diplomacy, commerce, formal hierarchy, governance → `中国古典绘画`.
+- Tea rooms, wabi-cha, Rikyu, silence, death, interior space → `水墨`.
+- If two themes fit, prioritize section mood over literal objects.
+- Ensure the selected subtheme explains why the image matches the text.
+
+## Composition Rules
+
+**Prefer:**
+- Wide composition, establishing shot
+- Panoramic view, landscape orientation
+- Scene with depth and atmosphere
+
+**Avoid:**
+- Close-up portrait of characters
+- Single figure focus
+- Tight cropping on faces
+
+## Aspect Ratio Priority
+
+| Ratio | Use Case | Priority |
+|-------|----------|----------|
+| 16:9 | Landscapes, battles, wide scenes | HIGH |
+| 3:4 | Figures, interiors, portraits | HIGH |
+| 1:1 | Square compositions | MEDIUM |
+| 4:3 | General purpose | LOW |
+
+## Fixed Settings
+
+- Resolution: **1K** (fixed, no override)
+
+## Example Prompt Construction
+
+Input elements:
+- Subject: Ancient Japanese court ceremony
+- Scene: Imperial palace interior
+- Mood: Grand, formal
+
+JSON prompt:
+```json
+{
+  "id": 1,
+  "placeholder": "IMAGE_PLACEHOLDER_1",
+  "title": "Ancient Japanese court ceremony",
+  "style_theme": "中国古典绘画",
+  "style_key": "chinese_classical",
+  "subtheme": "Gongbi-style ritual order and elegant hierarchy",
+  "aspect_ratio": "16:9",
+  "alt": "日本宫廷仪式与权力秩序",
+  "prompt": "Ancient Japanese imperial court ceremony in an elegant palace hall, aristocrats in flowing robes, gold screens, incense smoke, ritual hierarchy and political order, refined East Asian historical composition, wide establishing view, no close-up portrait"
+}
+```
